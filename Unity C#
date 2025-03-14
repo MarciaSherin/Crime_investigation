@@ -1,0 +1,76 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class CrimeSceneVR : MonoBehaviour
+{
+    public string apiUrl = "http://localhost:8000/analyze";
+    public GameObject weaponPrefab;
+    public GameObject bloodPrefab;
+    public GameObject fingerprintPrefab;
+    public GameObject footprintPrefab;
+
+    void Start()
+    {
+        StartCoroutine(GetEvidence());
+    }
+
+    IEnumerator GetEvidence()
+    {
+        WWWForm form = new WWWForm();
+        byte[] imageBytes = System.IO.File.ReadAllBytes("Assets/Scenes/crime_scene_image.jpg");
+        form.AddBinaryData("file", imageBytes, "scene.jpg", "image/jpeg");
+
+        using (UnityWebRequest request = UnityWebRequest.Post(apiUrl, form))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Error: " + request.error);
+            }
+            else
+            {
+                EvidenceResponse response = JsonUtility.FromJson<EvidenceResponse>(request.downloadHandler.text);
+                foreach (string evidence in response.detected_evidence)
+                {
+                    SpawnEvidence(evidence);
+                }
+            }
+        }
+    }
+
+    void SpawnEvidence(string evidence)
+    {
+        GameObject prefab = null;
+
+        switch (evidence)
+        {
+            case "weapon":
+                prefab = weaponPrefab;
+                break;
+            case "blood":
+                prefab = bloodPrefab;
+                break;
+            case "fingerprint":
+                prefab = fingerprintPrefab;
+                break;
+            case "footprint":
+                prefab = footprintPrefab;
+                break;
+        }
+
+        if (prefab != null)
+        {
+            Vector3 randomPosition = new Vector3(Random.Range(-2f, 2f), 0.5f, Random.Range(-2f, 2f));
+            Instantiate(prefab, randomPosition, Quaternion.identity);
+        }
+    }
+
+    [System.Serializable]
+    public class EvidenceResponse
+    {
+        public List<string> detected_evidence;
+    }
+}
