@@ -1,0 +1,11 @@
+from pymongo import MongoClient
+
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client['crime_scene_db']
+collection = db['evidence']
+
+# Save detected evidence to the database
+def save_evidence(evidence_list):
+    document = {"evidence": evidence_list}
+    collection.insert_one(document)
