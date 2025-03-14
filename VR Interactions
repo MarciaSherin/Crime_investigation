@@ -1,0 +1,38 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+
+public class VRInteraction : MonoBehaviour
+{
+    private XRGrabInteractable grabInteractable;
+
+    void Start()
+    {
+        grabInteractable = GetComponent<XRGrabInteractable>();
+    }
+
+    void OnEnable()
+    {
+        grabInteractable.onSelectEntered.AddListener(OnGrab);
+        grabInteractable.onSelectExited.AddListener(OnRelease);
+    }
+
+    void OnDisable()
+    {
+        grabInteractable.onSelectEntered.RemoveListener(OnGrab);
+        grabInteractable.onSelectExited.RemoveListener(OnRelease);
+    }
+
+    private void OnGrab(XRBaseInteractor interactor)
+    {
+        Debug.Log("Grabbed " + gameObject.name);
+        GetComponent<Rigidbody>().isKinematic = true;
+    }
+
+    private void OnRelease(XRBaseInteractor interactor)
+    {
+        Debug.Log("Released " + gameObject.name);
+        GetComponent<Rigidbody>().isKinematic = false;
+    }
+} 
