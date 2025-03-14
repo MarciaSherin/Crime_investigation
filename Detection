@@ -1,0 +1,14 @@
+import tensorflow as tf
+import numpy as np
+
+# Load the pre-trained YOLOv8 model
+model = tf.keras.models.load_model('yolov8_forensics.h5')
+
+# Evidence labels
+EVIDENCE_CLASSES = ['weapon', 'blood', 'fingerprint', 'footprint']
+
+def detect_evidence(image):
+    img_array = np.array(image)
+    predictions = model.predict(np.expand_dims(img_array / 255.0, axis=0))[0]
+    detected_items = [EVIDENCE_CLASSES[i] for i, p in enumerate(predictions) if p > 0.5]
+    return detected_items
